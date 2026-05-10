@@ -214,3 +214,42 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- OPERACIONES SOLICITADAS EN LA EVALUACIÓN
+-- ==========================================================
+
+-- Consulta 1: Clientes con pedidos en los últimos 30 días
+SELECT DISTINCT c.nombre, c.apellido, c.direccion, c.correo 
+FROM clientes c
+JOIN pedidos p ON c.id = p.id_cliente
+WHERE p.fecha >= DATE_SUB('2026-05-06', INTERVAL 30 DAY);
+
+-- Consulta 2: Productos con mayor cantidad de ventas en el último mes
+SELECT pr.nombre, SUM(v.cantidad) AS total_vendido
+FROM productos pr
+JOIN ventas v ON pr.id = v.id_producto
+JOIN pedidos pe ON v.id_pedido = pe.id
+WHERE pe.fecha >= DATE_SUB('2026-05-06', INTERVAL 1 MONTH)
+GROUP BY pr.id
+ORDER BY total_vendido DESC;
+-- Consulta 3: Clientes con más pedidos en el último año
+SELECT c.nombre, c.apellido, COUNT(p.id) AS cantidad_pedidos
+FROM clientes c
+JOIN pedidos p ON c.id = p.id_cliente
+WHERE p.fecha >= DATE_SUB('2026-05-06', INTERVAL 1 YEAR)
+GROUP BY c.id
+ORDER BY cantidad_pedidos DESC;
+-- Actualización 1: Aumentar precio de "Camisetas" en un 10%
+UPDATE productos 
+SET precio = precio * 1.10 
+WHERE categoria = 'Camisetas';
+-- Eliminación 2: Eliminar pedidos sin ventas asociadas
+DELETE FROM pedidos 
+WHERE id NOT IN (SELECT id_pedido FROM ventas);
+-- Vista 1: vista_clientes_pedidos
+CREATE VIEW vista_clientes_pedidos AS
+SELECT CONCAT(c.nombre, ' ', c.apellido) AS nombre_completo, p.fecha, p.total
+FROM clientes c
+JOIN pedidos p ON c.id = p.id_cliente;
+
